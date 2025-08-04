@@ -11,11 +11,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=[
-    'https://naeturbok.netlify.app',
-    'http://localhost:3000',
-    'http://localhost:3001'
-], supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
+CORS(app, 
+     origins=['https://naeturbok.netlify.app', 'http://localhost:3000', 'http://localhost:3001'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=True,
+     max_age=3600)
 
 # MongoDB connection using environment variables
 MONGO_URI = os.getenv('MONGO_URI')
@@ -266,6 +267,17 @@ def health_check():
             'message': 'Database connection failed',
             'error': str(e)
         }), 500
+
+@app.route('/api/records', methods=['OPTIONS'])
+@app.route('/api/records/<record_id>', methods=['OPTIONS'])
+def handle_options():
+    """Handle preflight OPTIONS requests"""
+    response = jsonify({'status': 'ok'})
+    response.headers.add('Access-Control-Allow-Origin', 'https://naeturbok.netlify.app')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 
 
