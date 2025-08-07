@@ -190,5 +190,6 @@ secrets.py
 # Temporary files
 *.tmp
 *.temp
+*.tmp.*
 temp/
 tmp/

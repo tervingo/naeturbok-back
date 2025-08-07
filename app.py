@@ -49,11 +49,15 @@ class ÁfengiSchema(Schema):
     vín = fields.Int(missing=0)
     annar = fields.Int(missing=0)
 
+class ÆfingSchema(Schema):
+    type = fields.Str(validate=lambda x: x in ['nej', 'Dir', 'labba', 'annað'], missing='nej')
+    km = fields.Float(missing=None, allow_none=True)
+
 class UpplýsingarSchema(Schema):
     hvar = fields.Str(missing="")
     kaffi = fields.Int(missing=0)
     áfengi = fields.Nested(ÁfengiSchema, missing={})
-    æfing = fields.Int(validate=lambda x: x in [0, 1, 2], missing=0)
+    æfing = fields.Nested(ÆfingSchema, missing={'type': 'nej'})
     sðl = fields.Bool(missing=False)
     lip_riv = fields.Str(attribute="lip-riv", data_key="lip-riv", missing="")
     sið_lio = fields.Str(attribute="sið lio", data_key="sið lio", missing="")
