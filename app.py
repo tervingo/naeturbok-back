@@ -50,7 +50,7 @@ class ÁfengiSchema(Schema):
     annar = fields.Int(missing=0)
 
 class ÆfingSchema(Schema):
-    type = fields.Str(validate=lambda x: x in ['nej', 'Dir', 'labba', 'annað'], missing='nej')
+    type = fields.Str(validate=lambda x: x in ['nej', 'Dir', 'Flor', 'labba', 'annað'], missing='nej')
     km = fields.Float(missing=None, allow_none=True)
 
 class UpplýsingarSchema(Schema):
