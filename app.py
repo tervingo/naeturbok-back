@@ -75,7 +75,7 @@ class RecordSchema(Schema):
     lát = fields.List(fields.Nested(LátSchema), missing=[])
     athugasemd = fields.Str(missing="")
     ready = fields.Bool(missing=False)
-    frábært = fields.Bool(missing=False)
+    frábært = fields.Int(validate=lambda x: x in [0, 1, 2, 3], missing=0)
 
 def serialize_record(record):
     """Convert ObjectId to string for JSON serialization"""
