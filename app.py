@@ -67,6 +67,7 @@ class UpplýsingarSchema(Schema):
     natft = fields.Bool(missing=False)
     bl = fields.Bool(missing=False)
     pap = fields.Bool(missing=False)
+    tamsul = fields.Bool(missing=False)
 
 class RecordSchema(Schema):
     date = fields.Date(required=True)
