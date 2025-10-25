@@ -37,7 +37,7 @@ except Exception as e:
 class LekarSchema(Schema):
     tími = fields.Str(required=True)
     aðvarun = fields.Bool(missing=False)
-    styrkur = fields.Int(validate=lambda x: x in [1, 2, 3], missing=1)
+    styrkur = fields.Int(validate=lambda x: x in [0, 1, 2, 3], missing=1)
     þörf = fields.Int(validate=lambda x: x in [0, 1, 2], missing=0)
 
 class LátSchema(Schema):
