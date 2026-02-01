@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime, date
 import os
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields, ValidationError, validates_schema
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -91,9 +91,26 @@ class PostOpSchema(Schema):
     or_ur = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-ur')
     or_ch = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=0, data_key='or-ch')
     or_vol = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=0, data_key='or-vol')
-    or_mp = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-mp')
+    or_mp = fields.Raw(
+        validate=lambda x: x == 'no' or x in [0, 1, 2],
+        load_default='no',
+        data_key='or-mp',
+    )
+    or_mp_por = fields.Str(
+        validate=lambda x: x in ['tos', 'estornudo', 'esfuerzo', 'otro', 'nada'],
+        load_default=None,
+        allow_none=True,
+        data_key='mp-por',
+    )
     or_mlk = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-mlk')
     or_spv = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-spv')
+
+    @validates_schema
+    def validate_mp_por(self, data, **kwargs):
+        or_mp = data.get('or_mp', 'no')
+        or_mp_por = data.get('or_mp_por')
+        if or_mp in (0, 1, 2) and not or_mp_por:
+            raise ValidationError({'mp-por': ['mp-por es obligatorio cuando or-mp es 0, 1 o 2']})
 
 def serialize_record(record):
     """Convert ObjectId to string for JSON serialization"""
@@ -316,10 +333,12 @@ def create_postop():
             'or-ur': validated.get('or_ur', 0),
             'or-ch': validated.get('or_ch', 0),
             'or-vol': validated.get('or_vol', 0),
-            'or-mp': validated.get('or_mp', 0),
+            'or-mp': validated.get('or_mp', 'no'),
             'or-mlk': validated.get('or_mlk', 0),
             'or-spv': validated.get('or_spv', 0),
         }
+        if validated.get('or_mp') in (0, 1, 2) and validated.get('or_mp_por'):
+            payload['mp-por'] = validated['or_mp_por']
         result = postop_collection.insert_one(payload)
         created = postop_collection.find_one({'_id': result.inserted_id})
         return jsonify({'success': True, 'data': serialize_postop(created)}), 201
