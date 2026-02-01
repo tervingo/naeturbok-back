@@ -25,6 +25,7 @@ try:
     client = MongoClient(MONGO_URI)
     db = client[DATABASE_NAME]
     collection = db[COLLECTION_NAME]
+    postop_collection = db['postop']
     
     # Test connection
     client.admin.command('ping')
@@ -36,48 +37,63 @@ except Exception as e:
 # Schemas for validation
 class LekarSchema(Schema):
     tími = fields.Str(required=True)
-    aðvarun = fields.Bool(missing=False)
-    styrkur = fields.Int(validate=lambda x: x in [0, 1, 2, 3], missing=1)
-    þörf = fields.Int(validate=lambda x: x in [0, 1, 2], missing=0)
+    aðvarun = fields.Bool(load_default=False)
+    styrkur = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=1)
+    þörf = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0)
 
 class LátSchema(Schema):
     tími = fields.Str(required=True)
-    flaedi = fields.Int(validate=lambda x: x in [0, 1, 2], missing=0)
+    flaedi = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0)
 
 class ÁfengiSchema(Schema):
-    bjór = fields.Int(missing=0)
-    vín = fields.Int(missing=0)
-    annar = fields.Int(missing=0)
+    bjór = fields.Int(load_default=0)
+    vín = fields.Int(load_default=0)
+    annar = fields.Int(load_default=0)
 
 class ÆfingSchema(Schema):
-    type = fields.Str(validate=lambda x: x in ['nej', 'Dir', 'Flor', 'labba', 'annað'], missing='nej')
-    km = fields.Float(missing=None, allow_none=True)
+    type = fields.Str(validate=lambda x: x in ['nej', 'Dir', 'Flor', 'labba', 'annað'], load_default='nej')
+    km = fields.Float(load_default=None, allow_none=True)
 
 class UpplýsingarSchema(Schema):
-    hvar = fields.Str(missing="")
-    kaffi = fields.Int(missing=0)
-    áfengi = fields.Nested(ÁfengiSchema, missing={})
-    æfing = fields.Nested(ÆfingSchema, missing={'type': 'nej'})
-    sðl = fields.Bool(missing=False)
-    sið_lip = fields.Str(attribute="sið lip", data_key="sið lip", missing="")
-    sið_riv = fields.Str(attribute="sið-riv", data_key="sið-riv", missing="")
-    sið_lio = fields.Str(attribute="sið lio", data_key="sið lio", missing="")
-    kvöldmatur = fields.Str(missing="")
-    sið_lát = fields.Str(attribute="sið lát", data_key="sið lát", missing="")
-    að_sofa = fields.Str(attribute="að sofa", data_key="að sofa", missing="")
-    natft = fields.Bool(missing=False)
-    bl = fields.Bool(missing=False)
-    pap = fields.Bool(missing=False)
-    tamsul = fields.Bool(missing=False)
+    hvar = fields.Str(load_default="")
+    kaffi = fields.Int(load_default=0)
+    áfengi = fields.Nested(ÁfengiSchema, load_default={})
+    æfing = fields.Nested(ÆfingSchema, load_default={'type': 'nej'})
+    sðl = fields.Bool(load_default=False)
+    sið_lip = fields.Str(attribute="sið lip", data_key="sið lip", load_default="")
+    sið_riv = fields.Str(attribute="sið-riv", data_key="sið-riv", load_default="")
+    sið_lio = fields.Str(attribute="sið lio", data_key="sið lio", load_default="")
+    kvöldmatur = fields.Str(load_default="")
+    sið_lát = fields.Str(attribute="sið lát", data_key="sið lát", load_default="")
+    að_sofa = fields.Str(attribute="að sofa", data_key="að sofa", load_default="")
+    natft = fields.Bool(load_default=False)
+    bl = fields.Bool(load_default=False)
+    pap = fields.Bool(load_default=False)
+    tamsul = fields.Bool(load_default=False)
 
 class RecordSchema(Schema):
     date = fields.Date(required=True)
-    upplýsingar = fields.Nested(UpplýsingarSchema, missing={})
-    lekar = fields.List(fields.Nested(LekarSchema), missing=[])
-    lát = fields.List(fields.Nested(LátSchema), missing=[])
-    athugasemd = fields.Str(missing="")
-    ready = fields.Bool(missing=False)
-    frábært = fields.Int(validate=lambda x: x in [0, 1, 2, 3], missing=0)
+    upplýsingar = fields.Nested(UpplýsingarSchema, load_default={})
+    lekar = fields.List(fields.Nested(LekarSchema), load_default=[])
+    lát = fields.List(fields.Nested(LátSchema), load_default=[])
+    athugasemd = fields.Str(load_default="")
+    ready = fields.Bool(load_default=False)
+    frábært = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=0)
+
+
+# PostOp collection schema (campos con guión se validan en load)
+class PostOpSchema(Schema):
+    fecha = fields.Str(required=True)  # YYYY-MM-DD
+    hora = fields.Str(required=True)   # HH:MM local
+    pos = fields.Str(validate=lambda x: x in ['depie', 'sentado'], required=True)
+    hec = fields.Int(validate=lambda x: x in [0, 1], load_default=0)
+    or_gan = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-gan')
+    or_ur = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-ur')
+    or_ch = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=0, data_key='or-ch')
+    or_vol = fields.Int(validate=lambda x: x in [0, 1, 2, 3], load_default=0, data_key='or-vol')
+    or_mp = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-mp')
+    or_mlk = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-mlk')
+    or_spv = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-spv')
 
 def serialize_record(record):
     """Convert ObjectId to string for JSON serialization"""
@@ -92,6 +108,14 @@ def serialize_record(record):
         # Calculate fjöldi leka
         record['fjöldi leka'] = len(record.get('lekar', []))
     return record
+
+
+def serialize_postop(doc):
+    """Convert ObjectId to string for JSON serialization (postop)"""
+    if doc:
+        doc = dict(doc)
+        doc['_id'] = str(doc['_id'])
+    return doc
 
 @app.route('/api/records', methods=['GET'])
 def get_records():
@@ -252,6 +276,58 @@ def delete_record(record_id):
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- PostOp API ---
+@app.route('/api/postop', methods=['GET'])
+def get_postop_list():
+    """List postop records, optionally filtered by date range"""
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        query = {}
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query['$gte'] = start_date
+            if end_date:
+                date_query['$lte'] = end_date
+            query['fecha'] = date_query
+        docs = list(postop_collection.find(query).sort('fecha', -1).sort('hora', -1))
+        serialized = [serialize_postop(d) for d in docs]
+        return jsonify({'success': True, 'data': serialized, 'count': len(serialized)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/postop', methods=['POST'])
+def create_postop():
+    """Create a new postop record"""
+    try:
+        data = request.get_json()
+        schema = PostOpSchema()
+        validated = schema.load(data)
+        # Guardar con claves or-gan, or-ur, etc.
+        payload = {
+            'fecha': validated['fecha'],
+            'hora': validated['hora'],
+            'pos': validated['pos'],
+            'hec': validated.get('hec', 0),
+            'or-gan': validated.get('or_gan', 0),
+            'or-ur': validated.get('or_ur', 0),
+            'or-ch': validated.get('or_ch', 0),
+            'or-vol': validated.get('or_vol', 0),
+            'or-mp': validated.get('or_mp', 0),
+            'or-mlk': validated.get('or_mlk', 0),
+            'or-spv': validated.get('or_spv', 0),
+        }
+        result = postop_collection.insert_one(payload)
+        created = postop_collection.find_one({'_id': result.inserted_id})
+        return jsonify({'success': True, 'data': serialize_postop(created)}), 201
+    except ValidationError as e:
+        return jsonify({'success': False, 'error': e.messages}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
