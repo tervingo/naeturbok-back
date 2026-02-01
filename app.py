@@ -292,7 +292,7 @@ def get_postop_list():
             if end_date:
                 date_query['$lte'] = end_date
             query['fecha'] = date_query
-        docs = list(postop_collection.find(query).sort('fecha', -1).sort('hora', -1))
+        docs = list(postop_collection.find(query).sort([('fecha', -1), ('hora', -1)]))
         serialized = [serialize_postop(d) for d in docs]
         return jsonify({'success': True, 'data': serialized, 'count': len(serialized)})
     except Exception as e:
