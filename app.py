@@ -348,6 +348,44 @@ def create_postop():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/postop/<postop_id>', methods=['PUT'])
+def update_postop(postop_id):
+    """Update an existing postop record"""
+    try:
+        if not ObjectId.is_valid(postop_id):
+            return jsonify({'success': False, 'error': 'Invalid record ID'}), 400
+        data = request.get_json()
+        schema = PostOpSchema()
+        validated = schema.load(data)
+        payload = {
+            'fecha': validated['fecha'],
+            'hora': validated['hora'],
+            'pos': validated['pos'],
+            'hec': validated.get('hec', 0),
+            'or-gan': validated.get('or_gan', 0),
+            'or-ur': validated.get('or_ur', 0),
+            'or-ch': validated.get('or_ch', 0),
+            'or-vol': validated.get('or_vol', 0),
+            'or-mp': validated.get('or_mp', 'no'),
+            'or-mlk': validated.get('or_mlk', 0),
+            'or-spv': validated.get('or_spv', 0),
+        }
+        if validated.get('or_mp') in (0, 1, 2) and validated.get('or_mp_por'):
+            payload['mp-por'] = validated['or_mp_por']
+        update_op = {'$set': payload}
+        if validated.get('or_mp') == 'no':
+            update_op['$unset'] = {'mp-por': ''}
+        result = postop_collection.update_one({'_id': ObjectId(postop_id)}, update_op)
+        if result.matched_count == 0:
+            return jsonify({'success': False, 'error': 'Record not found'}), 404
+        updated = postop_collection.find_one({'_id': ObjectId(postop_id)})
+        return jsonify({'success': True, 'data': serialize_postop(updated)})
+    except ValidationError as e:
+        return jsonify({'success': False, 'error': e.messages}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
