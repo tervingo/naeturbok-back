@@ -87,7 +87,11 @@ class PostOpSchema(Schema):
     hora = fields.Str(required=True)   # HH:MM local
     pos = fields.Str(validate=lambda x: x in ['depie', 'sentado'], required=True)
     hec = fields.Int(validate=lambda x: x in [0, 1], load_default=0)
-    or_gan = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-gan')
+    or_gan = fields.Float(
+        validate=lambda x: x in (0, 0.5, 1, 2),
+        load_default=0,
+        data_key='or-gan',
+    )
     or_ur = fields.Int(validate=lambda x: x in [0, 1, 2], load_default=0, data_key='or-ur')
     or_ch = fields.Float(
         validate=lambda x: x in (0, 0.5, 1, 1.5, 2, 3),
