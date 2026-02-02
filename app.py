@@ -116,6 +116,7 @@ class PostOpSchema(Schema):
     )
     or_mlk = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-mlk')
     or_spv = fields.Int(validate=lambda x: 0 <= x <= 10, load_default=0, data_key='or-spv')
+    dol = fields.Int(validate=lambda x: 0 <= x <= 5, load_default=0, data_key='dol')
     ingesta = fields.Str(
         validate=lambda x: x in ('', 'agua', 'agua con gas', 'cerveza', 'zumo', 'leche', 'otros'),
         load_default='',
@@ -363,6 +364,7 @@ def create_postop():
             'or-mp': validated.get('or_mp', 'no'),
             'or-mlk': validated.get('or_mlk', 0),
             'or-spv': validated.get('or_spv', 0),
+            'dol': validated.get('dol', 0),
             'ingesta': validated.get('ingesta', ''),
             'ingesta-cantidad': validated.get('ingesta_cantidad', ''),
             'medicación': validated.get('medicacion', ''),
@@ -399,6 +401,7 @@ def update_postop(postop_id):
             'or-mp': validated.get('or_mp', 'no'),
             'or-mlk': validated.get('or_mlk', 0),
             'or-spv': validated.get('or_spv', 0),
+            'dol': validated.get('dol', 0),
             'ingesta': validated.get('ingesta', ''),
             'ingesta-cantidad': validated.get('ingesta_cantidad', ''),
             'medicación': validated.get('medicacion', ''),
