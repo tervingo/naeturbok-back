@@ -121,6 +121,11 @@ class PostOpSchema(Schema):
         load_default='',
         data_key='ingesta',
     )
+    ingesta_cantidad = fields.Str(
+        validate=lambda x: x in ('', '100 ml', '200 ml', '300 ml', '400 ml', '500 ml', '600 ml', '700 ml', '800 ml', '900 ml', '1l'),
+        load_default='',
+        data_key='ingesta-cantidad',
+    )
     medicacion = fields.Str(
         validate=lambda x: x in ('', 'paracetamol 1mg', 'iboprufeno 600mg', 'antibiótico'),
         load_default='',
@@ -359,6 +364,7 @@ def create_postop():
             'or-mlk': validated.get('or_mlk', 0),
             'or-spv': validated.get('or_spv', 0),
             'ingesta': validated.get('ingesta', ''),
+            'ingesta-cantidad': validated.get('ingesta_cantidad', ''),
             'medicación': validated.get('medicacion', ''),
         }
         if validated.get('or_mp') in (0, 1, 2) and validated.get('or_mp_por'):
@@ -394,6 +400,7 @@ def update_postop(postop_id):
             'or-mlk': validated.get('or_mlk', 0),
             'or-spv': validated.get('or_spv', 0),
             'ingesta': validated.get('ingesta', ''),
+            'ingesta-cantidad': validated.get('ingesta_cantidad', ''),
             'medicación': validated.get('medicacion', ''),
         }
         if validated.get('or_mp') in (0, 1, 2) and validated.get('or_mp_por'):
