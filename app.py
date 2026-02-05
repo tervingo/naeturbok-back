@@ -422,6 +422,20 @@ def update_postop(postop_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/postop/<postop_id>', methods=['DELETE'])
+def delete_postop(postop_id):
+    """Delete a postop record"""
+    try:
+        if not ObjectId.is_valid(postop_id):
+            return jsonify({'success': False, 'error': 'Invalid record ID'}), 400
+        result = postop_collection.delete_one({'_id': ObjectId(postop_id)})
+        if result.deleted_count == 0:
+            return jsonify({'success': False, 'error': 'Record not found'}), 404
+        return jsonify({'success': True, 'message': 'Record deleted successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
